@@ -122,7 +122,6 @@ def send_message():
     date = datetime.now()
     db.message.insert_one(
         {"from_id": from_id, "to_id": to_id, "text": text, "date": date})
-    print("All right guys everything is fine")
     #socket_io.emit('message', get_messages_from_chat(to_id, from_id))
     return {'response': 'ok'}
 
