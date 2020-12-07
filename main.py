@@ -4,7 +4,7 @@ from flask_socketio import SocketIO
 
 from bson import ObjectId
 from pymongo import MongoClient
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 import ssl
 
 app = Flask(__name__)
@@ -47,12 +47,21 @@ def get_correspondents(from_id):
 
 @app.route("/auth")
 def auth():
-    data = request.json
+    data = request.get_json()
     login = data["login"]
     password = data["password"]
 
-    print(get_password_by_login("natalya"))
-    print(get_password_by_login("kur"))
+    check = get_password_by_login(login)
+    if check is None:
+        id = create_user(login, password)
+        return {'id': id}
+    else:
+        if password == check:
+            data = get_id_by_login(login)
+            return {'id': id}
+        else:
+            return make_response("Authentication failed", 400)
+
 
 
 def get_password_by_login(login):
@@ -62,16 +71,39 @@ def get_password_by_login(login):
         password = item["password"]
         break
     if password is None:
-        return -1
+        return None
     return password
+
+def get_id_by_login(login):
+    cursor = db.user.find({"login": login})
+    for item in cursor:
+        return str(item["_id"])
+    return None
+
+def create_user(login, password):
+    id = db.user.insert_one(
+        {"login": login, "password": password})
+    return str(id.inserted_id)
+
+@app.route("/search")
+def search():
+    data = request.get_json()
+    query = data['query']
+    cursor = db.user.find({"login": query})
+    for item in cursor:
+        id = str(item["_id"])
+    return id
 
 
 @app.route("/messages")
 def get_messages_from_chat():
+    data = request.get_json()
+    from_id = data['from_id']
+    to_id = data['to_id']
     cursor = db.message.find(
         {"$or": [
-            {"to_id": "5fc23d1346ea132fe3066973", "from_id": "5fc2387539dc49f806f755c5"},
-            {"to_id": "5fc2387539dc49f806f755c5", "from_id": "5fc23d1346ea132fe3066973"}
+            {"to_id": from_id, "from_id": to_id},
+            {"to_id": to_id, "from_id": from_id}
         ]
         })
     result = []
@@ -91,7 +123,7 @@ def send_message():
     db.message.insert_one(
         {"from_id": from_id, "to_id": to_id, "text": text, "date": date})
     print("All right guys everything is fine")
-    socket_io.emit('message', get_messages_from_chat(to_id, from_id))
+    #socket_io.emit('message', get_messages_from_chat(to_id, from_id))
     return {'response': 'ok'}
 
 
