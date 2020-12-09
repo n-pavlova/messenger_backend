@@ -45,7 +45,7 @@ def get_correspondents(from_id):
     return jsonify({'result': result})
 
 
-@app.route("/auth")
+@app.route("/auth", methods=['POST'])
 def auth():
     data = request.get_json()
     login = data["login"]
@@ -57,7 +57,7 @@ def auth():
         return {'id': id}
     else:
         if password == check:
-            data = get_id_by_login(login)
+            id = get_id_by_login(login)
             return {'id': id}
         else:
             return make_response("Authentication failed", 400)
