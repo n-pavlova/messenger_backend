@@ -35,6 +35,8 @@ def connect_to_database():
 
 @app.route("/correspondents", methods=['POST', 'GET'])
 def get_correspondents():
+    data = request.get_json()
+    from_id = data["id"]
     cursor_from = db.message.find({"from_id": from_id}).distinct("to_id")
     result = []
     for item in cursor_from:
