@@ -14,8 +14,8 @@ CORS(app)
 app.config['JSON_AS_ASCII'] = False
 
 
-# to_id = "5fc23d1346ea132fe3066973"
-# from_id = "5fc2387539dc49f806f755c5"
+to_id = "5fc23d1346ea132fe3066973"
+from_id = "5fc2387539dc49f806f755c5"
 
 @app.route('/')
 @app.route('/index')
@@ -54,13 +54,13 @@ def auth():
     check = get_password_by_login(login)
     if check is None:
         id = create_user(login, password)
-        return {'id': id}
+        return {'id': id, 'success': true}
     else:
         if password == check:
             id = get_id_by_login(login)
-            return jsonify({"id": id})
+            return jsonify({"id": id, 'success': True})
         else:
-            return make_response("Authentication failed", 400)
+            return jsonify({'success': False})
 
 
 
@@ -97,9 +97,9 @@ def search():
 
 @app.route("/messages")
 def get_messages_from_chat():
-    data = request.get_json()
+    '''data = request.get_json()
     from_id = data['from_id']
-    to_id = data['to_id']
+    to_id = data['to_id']'''
     cursor = db.message.find(
         {"$or": [
             {"to_id": from_id, "from_id": to_id},
