@@ -6,6 +6,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 from flask import Flask, jsonify, request, make_response
 import ssl
+import re
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = '88024e1b4d3d7a4d7c2f839092334feb1d4c8c36'
@@ -31,14 +32,9 @@ def connect_to_database():
     return database
 
 
-db = connect_to_database()
-date = datetime.now()
-print(date)
 
 @app.route("/correspondents", methods=['POST', 'GET'])
 def get_correspondents():
-    data = request.get_json()
-    from_id = data["id"]
     cursor_from = db.message.find({"from_id": from_id}).distinct("to_id")
     result = []
     for item in cursor_from:
@@ -100,14 +96,18 @@ def create_user(login, password):
         {"login": login, "password": password})
     return str(id.inserted_id)
 
+
 @app.route("/search")
 def search():
     data = request.get_json()
     query = data['query']
-    cursor = db.user.find({"login": query})
+    rgx = re.compile('.*' + query +'.*', re.IGNORECASE)  # compile the regex
+    cursor = db.user.find({"login":rgx})
+    result = []
     for item in cursor:
-        id = str(item["_id"])
-    return id
+        item["_id"] = str(item["_id"])
+        result.append(item)
+    return jsonify(result)
 
 
 @app.route("/messages", methods=['POST', 'GET'])
@@ -138,8 +138,8 @@ def send_message():
     db.message.insert_one(
         {"from_id": from_id, "to_id": to_id, "text": text, "date": date})
     #socket_io.emit('message', get_messages_from_chat(to_id, from_id))
-    return {'response': 'ok'}
+    return {'success': 'ok'}
 
 
-
+db = connect_to_database()
 app.run()
