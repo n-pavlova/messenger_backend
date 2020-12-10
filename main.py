@@ -110,7 +110,7 @@ def search():
     return id
 
 
-@app.route("/messages", methods=['POST', 'GET']))
+@app.route("/messages", methods=['POST', 'GET'])
 def get_messages_from_chat():
     data = request.get_json()
     from_id = data['from_id']
@@ -120,7 +120,7 @@ def get_messages_from_chat():
             {"to_id": from_id, "from_id": to_id},
             {"to_id": to_id, "from_id": from_id}
         ]
-        })
+        }).sort([("date", -1)])
     result = []
     for item in cursor:
         item["_id"] = str(item["_id"])
