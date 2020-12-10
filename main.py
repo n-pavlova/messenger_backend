@@ -37,6 +37,8 @@ print(date)
 
 @app.route("/correspondents", methods=['POST', 'GET'])
 def get_correspondents():
+    data = request.get_json()
+    from_id = data["id"]
     cursor_from = db.message.find({"from_id": from_id}).distinct("to_id")
     result = []
     for item in cursor_from:
@@ -108,7 +110,7 @@ def search():
     return id
 
 
-@app.route("/messages")
+@app.route("/messages", methods=['POST', 'GET']))
 def get_messages_from_chat():
     data = request.get_json()
     from_id = data['from_id']
