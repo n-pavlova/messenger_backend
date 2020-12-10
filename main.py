@@ -35,15 +35,28 @@ db = connect_to_database()
 date = datetime.now()
 print(date)
 
+@app.route("/correspondents", methods=['POST', 'GET'])
+def get_correspondents():
+    cursor_from = db.message.find({"from_id": from_id}).distinct("to_id")
+    result = []
+    for item in cursor_from:
+        result.append(item)
+    cursor_to = db.message.find({"to_id": from_id}).distinct("from_id")
+    for item in cursor_to:
+        result.append(item)
+    result = set(result)
+    list_of_users = []
+    for item in result:
+        list_of_users.append(get_user_by_id(item))
+    return jsonify(list_of_users)
 
-def get_correspondents(from_id):
-    cursor = db.user.find({"from_id": from_id})
+
+def get_user_by_id(id):
+    cursor = db.user.find({"_id": ObjectId(id)})
     result = []
     for item in cursor:
         item["_id"] = str(item["_id"])
-        result.append(item)
-    return jsonify({'result': result})
-
+        return item
 
 @app.route("/auth", methods=['POST'])
 def auth():
@@ -97,9 +110,9 @@ def search():
 
 @app.route("/messages")
 def get_messages_from_chat():
-    '''data = request.get_json()
+    data = request.get_json()
     from_id = data['from_id']
-    to_id = data['to_id']'''
+    to_id = data['to_id']
     cursor = db.message.find(
         {"$or": [
             {"to_id": from_id, "from_id": to_id},
