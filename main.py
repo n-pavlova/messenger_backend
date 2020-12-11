@@ -15,8 +15,6 @@ CORS(app)
 app.config['JSON_AS_ASCII'] = False
 
 
-to_id = "5fc23d1346ea132fe3066973"
-from_id = "5fc2387539dc49f806f755c5"
 
 @app.route('/')
 @app.route('/index')
@@ -122,7 +120,7 @@ def get_messages_from_chat():
             {"to_id": from_id, "from_id": to_id},
             {"to_id": to_id, "from_id": from_id}
         ]
-        }).sort([("date", -1)])
+        }).sort([("date", 1)])
     result = []
     for item in cursor:
         item["_id"] = str(item["_id"])
@@ -134,12 +132,11 @@ def get_messages_from_chat():
 def send_message():
     data = request.get_json()
     from_id = data['from_id']
-    to_id = data['to_id']
+    to_id = data['to_id']['_id']
     text = data['text']
     date = datetime.now()
     db.message.insert_one(
         {"from_id": from_id, "to_id": to_id, "text": text, "date": date})
-    #socket_io.emit('message', get_messages_from_chat(to_id, from_id))
     return {'success': 'ok'}
 
 
