@@ -19,3 +19,6 @@ source ./venv/bin/activate
 pip install -r requirements.txt 
 python3 main.py
 ```
+To log in, use:
+login: natalya
+password: natalya
