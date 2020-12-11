@@ -20,5 +20,6 @@ pip install -r requirements.txt
 python3 main.py
 ```
 To log in, use:
-login: natalya
+```login: natalya
 password: natalya
+```
