@@ -112,6 +112,7 @@ def search():
 
 @app.route("/messages", methods=['POST', 'GET'])
 def get_messages_from_chat():
+    s = request
     data = request.get_json()
     from_id = data['from_id']
     to_id = data['to_id']
